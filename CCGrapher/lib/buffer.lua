@@ -14,45 +14,72 @@ local index = function(_t, _m)
 end
 return {
 	new = function(_t)
-		return setmetatable({
-				order = {[0] = index({pos = {0, 0}}, _t)};
-				cache = index({}, {})
-				pos = {0, 0};
-				size = {x = {1, max_x}, y = {1, max_y}};
-				buffer = function(self, _n)
-					self.order[_n or #self.order + 1] = index({pos = {0, 0}}, {})
-				end;
-				render = function(self)
-					for x = self.size.x[1], self.size.x[2] do
-						for y = self.size.y[1], self.size.y[2] do
-							local p = {}
-							for i = #self.order, 0, -1 do
-								local buffer = self.order[i]
-								local pi = buffer[x + buffer.pos[1] + self.pos[1]][y + buffer.pos[2] + self.pos[2]]
-								for j = 1, 3 do
-									p[j] = p[j] or pi[j]
-								end
-								if p[1] and p[2] and p[3] then
-									break
-								end
+		return {
+			def = {_t[1] or colors.white, _t[2] or colors.lightGray, _t[3] or " "}
+			order = {};
+			cache = index({}, {})
+			pos = {0, 0};
+			size = {x = {1, max_x}, y = {1, max_y}};
+			buffer = function(self, _n)
+				local t = index({
+					pos = {0, 0};
+					pixel = function(buffer, _x, _y, _p)
+						local p = buffer[_x + buffer.pos[1] + self.pos[1]][_y + buffer.pos[2] + self.pos[2]]
+						if _q then
+							for i = 1, 3 do
+								p[i] = q[i] or p[i]
 							end
-							term.setCursorPos(x, y)
-							term.setBackgroundColor(p[1])
-							term.setTextColor(p[2])
-							term.write(p[3])
+						end
+						return p
+					end;
+					write = function(buffer, _str, _x, _y, _text, _back)
+						for x = 1, #_str do
+							buffer:pixel(x + _x - 1, _y, {_back, _text, _str:sub(x, x)})
+						end
+						return buffer
+					end;
+					rect = function(buffer, _x1, _y1, _x2, _y2, _back, _text, _char)
+						for x = _x1, _x2 do
+							for y = _y1, _y2 do
+								buffer:pixel(x, y, {_back, _text, _char})
+							end
+						end
+					end;
+				}, {})
+				self.order[_n or (#self.order + 1)] = t
+				return t
+			end;
+			render = function(self)
+				local t = index({
+					draw = function(self)
+						for x, v in pairs(self) do
+							for y, p in pairs(v) do
+								term.setCursorPos(x, y)
+								term.setBackgroundColor(p[1])
+								term.setTextColor(p[2])
+								term.write(p[3])
+								self.cache[x][y] = p
+							end
+						end
+					end;
+				}, self.def)
+				for x = self.size.x[1], self.size.x[2] do
+					for y = self.size.y[1], self.size.y[2] do
+						local p = t[x][y]
+						for i = #self.order do
+							local buffer = self.order[i]
+							local pi = buffer[x + buffer.pos[1] + self.pos[1]][y + buffer.pos[2] + self.pos[2]]
+							for j = 1, 3 do
+								p[j] = p[j] or pi[j]
+							end
+							if p[1] and p[2] and p[3] then
+								break
+							end
 						end
 					end
-				end;
-			},
-			{
-				__index = function(self, key)
-					for k, v in pairs(self.order) do
-						if k == key then
-							return v
-						end
-					end
-				end;
-			}
-		)
+				end
+				return t
+			end;
+		}
 	end;
 }
