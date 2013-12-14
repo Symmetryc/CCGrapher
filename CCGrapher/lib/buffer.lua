@@ -15,9 +15,9 @@ end
 return {
 	new = function(_t)
 		return {
-			def = {_t[1] or colors.white, _t[2] or colors.lightGray, _t[3] or " "}
+			def = {_t and _t[1] or colors.white, _t and _t[2] or colors.lightGray, _t and _t[3] or " "};
 			order = {};
-			cache = index({}, {})
+			cache = index({}, {});
 			pos = {0, 0};
 			size = {x = {1, max_x}, y = {1, max_y}};
 			buffer = function(self, _n)
@@ -51,28 +51,31 @@ return {
 			end;
 			render = function(self)
 				local t = index({
-					draw = function(self)
-						for x, v in pairs(self) do
-							for y, p in pairs(v) do
+					draw = function(buffer)
+						for x = self.size.x[1], self.size.x[2] do
+							local p1 = buffer[x]
+							for y = self.size.y[1], self.size.y[2] do
+								local p2 = p1[y]
 								term.setCursorPos(x, y)
-								term.setBackgroundColor(p[1])
-								term.setTextColor(p[2])
-								term.write(p[3])
-								self.cache[x][y] = p
+								term.setBackgroundColor(p2[1])
+								term.setTextColor(p2[2])
+								term.write(p2[3])
+								self.cache[x][y] = p2
 							end
 						end
 					end;
 				}, self.def)
 				for x = self.size.x[1], self.size.x[2] do
+					local p1 = t[x]
 					for y = self.size.y[1], self.size.y[2] do
-						local p = t[x][y]
-						for i = #self.order do
+						local p2 = p1[y]
+						for i = #self.order, 1, -1 do
 							local buffer = self.order[i]
 							local pi = buffer[x + buffer.pos[1] + self.pos[1]][y + buffer.pos[2] + self.pos[2]]
 							for j = 1, 3 do
-								p[j] = p[j] or pi[j]
+								p2[j] = p2[j] or pi[j]
 							end
-							if p[1] and p[2] and p[3] then
+							if p2[1] and p2[2] and p2[3] then
 								break
 							end
 						end
