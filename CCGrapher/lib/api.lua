@@ -6,19 +6,19 @@
 
 local M = {}
 
--- Create a derivative for a function
+--- Create a derivative for a function
 -- This function takes two arguments, a function and a delta. The delta can be left unspecified. The function returned is an approximation for the derivative of the given function, and delta specifies the accuracy, where a smaller delta results in a higher accuracy. 
 -- @tparam func f The function to derive from
 -- @tparam number delta The accuracy of the derivation, defaults to 1e-4
 -- @treturn func The derivative of f
-M.derive = function(_f, _delta)
+M.derive = function(f, _delta)
 	local delta = _delta or 1e-4
 	return function(x)
-		return (_f(x + delta) - _f(x)) / delta
+		return (f(x + delta) - f(x)) / delta
 	end
 end
 
--- Creates an equation object
+--- Creates an equation object
 -- @param f The function that the equation will use to create values
 -- @return The equation
 M.eq = function(_f)
@@ -30,7 +30,7 @@ M.eq = function(_f)
 	})
 end
 
--- Finds the solution to an equation using Newton-Raphson method
+--- Finds the solution to an equation using Newton-Raphson method
 -- @param eq The equation that you are solving
 -- @param var The variable you are solving for
 -- @param init The initial guess
@@ -40,7 +40,7 @@ M.nr = function(_eq, _var, _init)
 	-- Finish this
 end
 
--- Funciton for implicit equations
+--- Funciton for implicit equations
 -- @param api The api itself (call using `:` syntactic sugar)
 -- @param str The string of the equation
 -- @return The equation solved for x
