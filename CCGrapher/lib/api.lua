@@ -32,12 +32,17 @@ end
 
 --- Finds the solution to an equation using Newton-Raphson method
 -- @param eq The equation that you are solving
+-- @param eq_derive The derivative function of eq
 -- @param var The variable you are solving for
 -- @param init The initial guess
+-- @param loop How many loops the approximation should go through
 -- @return The solution
-M.nr = function(_eq, _var, _init)
-	local init = _init or 0.1
-	-- Finish this
+M.nr = function(_eq, _eq_derive, _var, _init, _loop)
+	local ans = _init or 0.1
+	for i = 1, _loop or 5 do
+		ans = ans - _eq(ans) / _eq_derive(ans)
+	end
+	return ans
 end
 
 --- Funciton for implicit equations
