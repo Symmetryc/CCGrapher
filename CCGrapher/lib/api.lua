@@ -40,7 +40,7 @@ end
 M.nr = function(_eq, _eq_derive, _var, _init, _loop)
 	local ans = _init or 0.1
 	for i = 1, _loop or 5 do
-		ans = ans - _eq(ans) / _eq_derive(ans)
+		ans = ans - _eq(ans) / _eq_derive(_eq, _ans)
 	end
 	return ans
 end
@@ -53,10 +53,10 @@ end
 M.impl = function(api, _str)
 	local f = loadstring("return ".._str:gsub("(.-)=(.+)", "(%1)-(%2)"))
 	local fx = function(x)
-		return api:nr(setfenv(f, {x = x, math = math}), "y")
+		return api:nr(setfenv(f, {x = x, math = math}), api.derive, "y")
 	end
 	local fy = function(y)
-		return api:nr(setfenv(f, {y = y, math = math}), "x")
+		return api:nr(setfenv(f, {y = y, math = math}), api.derive, "x")
 	end
 	return api:eq(fx), api:eq(fy)
 end
