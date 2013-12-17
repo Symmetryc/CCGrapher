@@ -8,13 +8,13 @@ local M = {}
 
 --- Create a derivative for a function
 -- This function takes two arguments, a function and a delta. The delta can be left unspecified. The function returned is an approximation for the derivative of the given function, and delta specifies the accuracy, where a smaller delta results in a higher accuracy. 
--- @tparam func f The function to derive from
+-- @tparam func _f The function to derive from
 -- @tparam number delta The accuracy of the derivation, defaults to 1e-4
--- @treturn func The derivative of f
-M.derive = function(f, _delta)
+-- @treturn func The derivative of _f
+M.derive = function(_f, _delta)
 	local delta = _delta or 1e-4
 	return function(x)
-		return (f(x + delta) - f(x)) / delta
+		return (_f(x + delta) - _f(x)) / delta
 	end
 end
 
