@@ -1,87 +1,55 @@
-local max_x, max_y = term.getSize()
-local index = function(_t, _m)
-	return setmetatable(_t, {
-		__index = function(self, key)
-			self[key] = setmetatable({}, {
-				__index = function(self2, key2)
-					self2[key2] = _m
-					return self2[key2]
-				end;
-			})
-			return self[key]
-		end;
-	})
-end
 return {
-	new = function(_t)
+	new = function()
 		return {
-			def = {_t and _t[1] or colors.white, _t and _t[2] or colors.lightGray, _t and _t[3] or " "};
-			order = {};
-			cache = index({}, {});
-			pos = {0, 0};
-			size = {x = {1, max_x}, y = {1, max_y}};
-			buffer = function(self, _n)
-				local t = index({
-					pos = {0, 0};
-					pixel = function(buffer, _x, _y, _p)
-						local p = buffer[_x + buffer.pos[1] + self.pos[1]][_y + buffer.pos[2] + self.pos[2]]
-						if _q then
-							for i = 1, 3 do
-								p[i] = q[i] or p[i]
-							end
-						end
-						return p
-					end;
-					write = function(buffer, _str, _x, _y, _text, _back)
-						for x = 1, #_str do
-							buffer:pixel(x + _x - 1, _y, {_back, _text, _str:sub(x, x)})
-						end
-						return buffer
-					end;
-					rect = function(buffer, _x1, _y1, _x2, _y2, _back, _text, _char)
-						for x = _x1, _x2 do
-							for y = _y1, _y2 do
-								buffer:pixel(x, y, {_back, _text, _char})
-							end
-						end
-					end;
-				}, {})
-				self.order[_n or (#self.order + 1)] = t
-				return t
-			end;
-			render = function(self)
-				local t = index({
-					draw = function(buffer)
-						for x = self.size.x[1], self.size.x[2] do
-							local p1 = buffer[x]
-							for y = self.size.y[1], self.size.y[2] do
-								local p2 = p1[y]
-								term.setCursorPos(x, y)
-								term.setBackgroundColor(p2[1])
-								term.setTextColor(p2[2])
-								term.write(p2[3])
-								self.cache[x][y] = p2
-							end
-						end
-					end;
-				}, self.def)
-				for x = self.size.x[1], self.size.x[2] do
-					local p1 = t[x]
-					for y = self.size.y[1], self.size.y[2] do
-						local p2 = p1[y]
-						for i = #self.order, 1, -1 do
-							local buffer = self.order[i]
-							local pi = buffer[x + buffer.pos[1] + self.pos[1]][y + buffer.pos[2] + self.pos[2]]
-							for j = 1, 3 do
-								p2[j] = p2[j] or pi[j]
-							end
-							if p2[1] and p2[2] and p2[3] then
-								break
-							end
-						end
+			act = {pos = {}};
+			pos = {};
+			back = colors.white;
+			text = colors.lightGray;
+			write = function(self, _str)
+				local act = self.act
+				local selfpos = self.pos
+				local append = true
+				if selfpos[1] ~= act.pos[1] or selfpos[2] ~= act.pos[2] then
+					act[#act + 1] = {term.setCursorPos, selfpos[1], selfpos[2]}
+					append = false
+				end
+				if self.back ~= act.back then
+					act[#act + 1] = {term.setBackgroundColor, self.back}
+					act.back = self.back
+					append = false
+				end
+				if self.text ~= act.text then
+					act[#act + 1] = {term.setTextColor, self.text}
+					act.text = self.text
+					append = false
+				end
+				for line, nl in _str:gmatch("([^\n]*)(\n?)") do
+					if append then
+						act[#act][2] = act[#act][2]..line
+						append = false
+					else
+						act[#act + 1] = {term.write, line}
+					end
+					selfpos[1] = selfpos[1] + #line
+					if nl == "\n" then
+						selfpos[1] = 1
+						selfpos[2] = selfpos[2] + 1
+						act[#act + 1] = {term.setCursorPos, 1, selfpos[2]}
 					end
 				end
-				return t
+				act.pos = {selfpos[1], selfpos[2]}
+				return self
+			end;
+			draw = function(self)
+				for i, v in ipairs(self.act) do
+					if v[3] then
+						v[1](v[2], v[3])
+					else
+						v[1](v[2])
+					end
+				end
+				self.act = {}
+				return self
 			end;
 		}
 	end;
