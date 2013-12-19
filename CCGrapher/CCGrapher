@@ -1,0 +1,2 @@
+local lib = shell.getRunningProgram():reverse():match(".-(/.*)"):reverse().."lib"
+local api, buffer = dofile(lib.."/api.lua"), dofile(lib.."/buffer.lua")
